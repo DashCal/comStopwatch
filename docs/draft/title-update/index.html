@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My App - -.-.-</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .info {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .value {
+            font-size: 14px;
+            color: #00d4aa;
+            word-break: break-all;
+        }
+
+        .value.original {
+            color: #666;
+            text-decoration: line-through;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #666;
+            padding: 12px 24px;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            border-color: #00d4aa;
+            color: #00d4aa;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-left: 2px solid #00d4aa;
+            background: #00d4aa10;
+            font-size: 12px;
+            color: #00d4aa;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="info">
+            <div class="label">Original Title</div>
+            <div class="value original" id="originalTitle">-</div>
+
+            <div class="label">Updated Title</div>
+            <div class="value" id="updatedTitle">-</div>
+
+            <div class="label">Version Config</div>
+            <div class="value" id="versionConfig">-</div>
+        </div>
+
+        <button class="btn" onclick="updateTitle()">Update Title</button>
+
+        <div class="status" id="status">Title updated successfully</div>
+    </div>
+
+    <script>
+        // Version configuration
+        const config = {
+            version: {
+                major: 0,
+                minor: 0,
+                patch: 1
+            }
+        };
+
+        // Format version string
+        const versionString = `${config.version.major}.${config.version.minor}.${config.version.patch}`;
+
+        // Display version config on load
+        document.getElementById('versionConfig').textContent = JSON.stringify(config, null, 4);
+
+        function updateTitle() {
+            // Get current title
+            const originalTitle = document.title;
+
+            // Display original
+            document.getElementById('originalTitle').textContent = originalTitle;
+
+            // Replace -.-.- with version string
+            // Using regex to match exact pattern
+            const updatedTitle = originalTitle.replace(/-\.-\.-/g, versionString);
+
+            // Apply new title
+            document.title = updatedTitle;
+
+            // Display updated
+            document.getElementById('updatedTitle').textContent = updatedTitle;
+
+            // Show status
+            const status = document.getElementById('status');
+            status.classList.add('show');
+            setTimeout(() => status.classList.remove('show'), 2000);
+        }
+
+        // Auto-update on load (optional)
+        // updateTitle();
+    </script>
+</body>
+
+</html>

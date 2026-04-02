@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My App - -.-.-</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            color: #e0e0e0;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #00d4aa;
+        }
+
+        .info {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .value {
+            font-size: 13px;
+            color: #00d4aa;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .value.original {
+            color: #666;
+            text-decoration: line-through;
+        }
+
+        .value.error {
+            color: #ff5555;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #666;
+            padding: 12px 24px;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-right: 10px;
+        }
+
+        .btn:hover:not(:disabled) {
+            border-color: #00d4aa;
+            color: #00d4aa;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn.primary {
+            border-color: #00d4aa;
+            color: #00d4aa;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-left: 2px solid;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status.show {
+            opacity: 1;
+        }
+
+        .status.success {
+            border-color: #00d4aa;
+            background: #00d4aa10;
+            color: #00d4aa;
+        }
+
+        .status.error {
+            border-color: #ff5555;
+            background: #ff555510;
+            color: #ff5555;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #2a2a2a;
+            border-top-color: #00d4aa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="input-group">
+            <label class="label">Config URL</label>
+            <input type="text" id="configUrl" placeholder="input the url of config json"
+                value="../../config.localwu.json">
+        </div>
+
+        <div class="toolbar">
+            <button class="btn primary" onclick="fetchAndUpdate()">
+                <span id="btnText">Fetch & Update</span>
+                <span id="loading" class="loading" style="display: none;"></span>
+            </button>
+            <button class="btn" onclick="resetTitle()">Reset</button>
+        </div>
+
+        <div class="info" style="margin-top: 20px;">
+            <div class="label">Original Title</div>
+            <div class="value original" id="originalTitle">-</div>
+
+            <div class="label" style="margin-top: 16px;">Fetched Config</div>
+            <div class="value" id="fetchedConfig">-</div>
+
+            <div class="label" style="margin-top: 16px;">Updated Title</div>
+            <div class="value" id="updatedTitle">-</div>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        // Store original title
+        const originalTitle = document.title;
+
+        // Display original on load
+        document.getElementById('originalTitle').textContent = originalTitle;
+
+        async function fetchAndUpdate() {
+            const url = document.getElementById('configUrl').value.trim();
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+            const status = document.getElementById('status');
+
+            // Reset UI
+            status.className = 'status';
+            document.getElementById('fetchedConfig').textContent = '-';
+            document.getElementById('fetchedConfig').className = 'value';
+            document.getElementById('updatedTitle').textContent = '-';
+
+            // Validate URL
+            if (!url) {
+                showStatus('Please enter a valid URL', 'error');
+                return;
+            }
+
+            // Show loading
+            btnText.textContent = 'Fetching...';
+            loading.style.display = 'inline-block';
+
+            try {
+                // Fetch config with cache-busting
+                const fetchUrl = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                const response = await fetch(fetchUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const config = await response.json();
+
+                // Display fetched config
+                document.getElementById('fetchedConfig').textContent = JSON.stringify(config, null, 2);
+
+                // Extract version
+                const version = extractVersion(config);
+                if (!version) {
+                    throw new Error('No valid version found in config (expected: version.major/minor/patch or version string)');
+                }
+
+                // Replace title
+                const newTitle = originalTitle.replace(/-\.-\.-/g, version);
+                document.title = newTitle;
+                document.getElementById('updatedTitle').textContent = newTitle;
+
+                showStatus(`Title updated to version ${version}`, 'success');
+
+            } catch (error) {
+                document.getElementById('fetchedConfig').textContent = error.message;
+                document.getElementById('fetchedConfig').className = 'value error';
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                btnText.textContent = 'Fetch & Update';
+                loading.style.display = 'none';
+            }
+        }
+
+        function extractVersion(config) {
+            // Support multiple config formats
+
+            // Format 1: { version: { major: 0, minor: 0, patch: 1 } }
+            if (config.version && typeof config.version === 'object') {
+                const { major, minor, patch } = config.version;
+                if (major !== undefined && minor !== undefined && patch !== undefined) {
+                    return `${major}.${minor}.${patch}`;
+                }
+            }
+
+            // Format 2: { version: "0.0.1" }
+            if (config.version && typeof config.version === 'string') {
+                return config.version;
+            }
+
+            // Format 3: { major: 0, minor: 0, patch: 1 } (root level)
+            if (config.major !== undefined && config.minor !== undefined && config.patch !== undefined) {
+                return `${config.major}.${config.minor}.${config.patch}`;
+            }
+
+            // Format 4: { version: "v0.0.1" } (with v prefix)
+            if (config.version && typeof config.version === 'string') {
+                return config.version.replace(/^v/, '');
+            }
+
+            return null;
+        }
+
+        function resetTitle() {
+            document.title = originalTitle;
+            document.getElementById('updatedTitle').textContent = '-';
+            document.getElementById('fetchedConfig').textContent = '-';
+            document.getElementById('fetchedConfig').className = 'value';
+            showStatus('Title reset to original', 'success');
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type} show`;
+
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 3000);
+        }
+
+        // Allow Enter key to trigger fetch
+        document.getElementById('configUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchAndUpdate();
+            }
+        });
+    </script>
+</body>
+
+</html>

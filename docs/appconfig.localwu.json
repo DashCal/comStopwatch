@@ -1,0 +1,13 @@
+{
+  "project": {
+    "name": "Stopwatch",
+    "host": "https://stopwatch.localwu.com"
+  },
+  "version": {
+    "major": 0,
+    "minor": 0,
+    "patch": 1
+  },
+  "404": true,
+  "root": "https://localwu.com"
+}
