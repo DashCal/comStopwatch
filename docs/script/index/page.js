@@ -3,7 +3,7 @@
 // ==========================================
 const LOCALAPPCONFIG = {
     ENV: {
-        DEV: true
+        DEV: false
     },
     PATHS: {
         CONFIG_DEV: '/docs/appconfig.localwu.json',
